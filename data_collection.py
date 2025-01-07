@@ -4,15 +4,23 @@ import time
 
 def fetch_binance_data(symbol, interval, start_time, end_time):
     url = f"https://api.binance.com/api/v3/klines"
-    params = {
-        'symbol': symbol,
-        'interval': interval,
-        'startTime': start_time,
-        'endTime': end_time,
-        'limit': 1000
-    }
-    response = requests.get(url, params=params)
-    data = response.json()
+   
+    all_data = []
+    while start_time < end_time:
+        params = {
+            'symbol': symbol,
+            'interval': interval,
+            'startTime': start_time,
+            'endTime': end_time,
+            'limit': 1000
+        }
+        response = requests.get(url, params=params)
+        data = response.json()
+        if not data:
+            break
+        all_data.extend(data)
+        start_time = data[-1][0] + 1  # Move to the next timestamp after the last one in the current batch
+
     df = pd.DataFrame(data, columns=[
         'timestamp', 'open', 'high', 'low', 'close', 'volume', 'close_time',
         'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume',
